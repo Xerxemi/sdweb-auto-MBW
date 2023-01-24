@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 from modules import sd_models
 
+from memory_tempfile import MemoryTempfile
 
 NUM_INPUT_BLOCKS = 12
 NUM_MID_BLOCK = 1
@@ -31,7 +32,8 @@ def merge(weights:list, model_0, model_1, device="cpu", base_alpha=0.5,
         output_file="", allow_overwrite=False, verbose=False,
         save_as_safetensors=False,
         save_as_half=False,
-        skip_position_ids=0
+        skip_position_ids=0,
+        use_ramdisk=False
         ):
     if weights is None:
         weights = None
@@ -166,14 +168,25 @@ def merge(weights:list, model_0, model_1, device="cpu", base_alpha=0.5,
 
     print("Saving...")
 
+    save_output_file = output_file
+    if use_ramdisk:
+        temp_output_file = MemoryTempfile().NamedTemporaryFile(delete=False)
+        save_output_file = temp_output_file
     _, extension = os.path.splitext(output_file)
     if extension.lower() == ".safetensors" or save_as_safetensors:
         if save_as_safetensors and extension.lower() != ".safetensors":
             output_file = output_file + ".safetensors"
         import safetensors.torch
-        safetensors.torch.save_file(theta_0, output_file, metadata={"format": "pt"})
+        safetensors.torch.save_file(theta_0, save_output_file, metadata={"format": "pt"})
     else:
-        torch.save({"state_dict": theta_0}, output_file)
+        torch.save({"state_dict": theta_0}, save_output_file)
+    if use_ramdisk:
+        try:
+            os.remove(output_file)
+        except OSError:
+            pass
+        finally:
+            os.symlink(temp_output_file.name, output_file)
 
     print("Done!")
 
