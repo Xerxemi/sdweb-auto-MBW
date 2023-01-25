@@ -20,6 +20,7 @@ except:
 from scripts.mbw.merge_block_weighted import merge
 from scripts.util.txt2img_api import txt2img, refresh_models
 from scripts.mbw_util.merge_history import MergeHistory
+from scripts.mbw_util.test_merge_history import TestMergeHistory
 
 #classifier plugins
 from importlib.machinery import SourceFileLoader
@@ -42,6 +43,7 @@ for _, dirs, _ in os.walk(classifiers_path):
 print("autoMBW: discovered " + str(plugins_count) + " classifier plugins.")
 
 mergeHistory = MergeHistory()
+testMergeHistory = TestMergeHistory()
 
 def on_ui_tabs():
     def create_sampler_and_steps_selection(choices, tabname):
@@ -57,16 +59,13 @@ def on_ui_tabs():
                     steps, sampler = create_sampler_and_steps_selection(samplers, "autombw")
                 with FormRow():
                     with gr.Column(elem_id="autombw_column_size", scale=4):
-                        width = gr.Slider(minimum=64, maximum=2048, step=8, label="Width", value=512, elem_id="autombw_width")
-                        height = gr.Slider(minimum=64, maximum=2048, step=8, label="Height", value=512, elem_id="autombw_height")
+                        width = gr.Slider(minimum=64, maximum=2048, step=64, label="Width", value=512, elem_id="autombw_width")
+                        height = gr.Slider(minimum=64, maximum=2048, step=64, label="Height", value=512, elem_id="autombw_height")
                     with gr.Column(elem_id="autombw_column_batch"):
                         batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id="autombw_batch_count")
                         batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1, elem_id="autombw_batch_size")
                 cfg_scale = gr.Slider(minimum=1.0, maximum=30.0, step=0.5, label='CFG Scale', value=7.0, elem_id="autombw_cfg_scale")
                 chk_keep_random_seed = gr.Checkbox(label="Keep random seed", value=False)
-                with FormRow(elem_id="autombw_column_batch"):
-                    batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id="autombw_batch_count")
-                    batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1, elem_id="autombw_batch_size")
                 with FormRow(elem_id="autombw_checkboxes"):
                     restore_faces = gr.Checkbox(label='Restore faces', value=False, visible=len(shared.face_restorers) > 1, elem_id="autombw_restore_faces")
                     tiling = gr.Checkbox(label='Tiling', value=False, elem_id="autombw_tiling")
@@ -92,16 +91,20 @@ def on_ui_tabs():
                 with gr.Row():
                     txt_block_test_increments = gr.Text(label="Test Increments", placeholder="0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1", elem_id="autombw_test_increments")
                 with gr.Row():
-                    chk_base_alpha = gr.Checkbox(label="base_alpha", value=True, elem_id="autombw_base_alpha")
+                    with gr.Column():
+                        with gr.Row():
+                            chk_base_alpha = gr.Checkbox(label="base_alpha", value=True, elem_id="autombw_base_alpha")
+                            sl_base_alpha = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="base_alpha", Value=0, elem_id="autombw_base_alpha_sl", visible=False)
+                        sl_B_ALL = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Test Base", Value=0, elem_id="autombw_test_base")
                     chk_verbose_mbw = gr.Checkbox(label="verbose console", value=False, elem_id="autombw_verbose_mbw")
                     chk_allow_overwrite = gr.Checkbox(label="Allow overwrite", value=True, interactive=False, elem_id="autombw_allow_overwrite")
                     chk_use_ramdisk = gr.Checkbox(label="Use ramdisk (Linux)", value=False, elem_id="autombw_use_ramdisk")
                 with gr.Row():
-                    with gr.Column(scale=3):
+                    with gr.Column():
                         with gr.Row():
                             chk_save_as_half = gr.Checkbox(label="Save as half", value=True, elem_id="autombw_save_as_half")
                             chk_save_as_safetensors = gr.Checkbox(label="Save as safetensors", value=False, elem_id="autombw_save_as_safetensors")
-                    with gr.Column(scale=4):
+                    with gr.Column():
                         radio_position_ids = gr.Radio(label="Skip/Reset CLIP position_ids", choices=["None", "Skip", "Force Reset"], value="None", type="index", elem_id="autombw_position_ids")
                     with gr.Column():
                         with gr.Row():
@@ -116,44 +119,83 @@ def on_ui_tabs():
             txt_model_O = gr.Text(label="Output Model Name", elem_id="autombw_model_o")
         with gr.Row():
             with gr.Column():
-                chk_IN_00 = gr.Checkbox(label="IN00", value=True, elem_id="autombw_in00")
-                chk_IN_01 = gr.Checkbox(label="IN01", value=True, elem_id="autombw_in01")
-                chk_IN_02 = gr.Checkbox(label="IN02", value=True, elem_id="autombw_in02")
-                chk_IN_03 = gr.Checkbox(label="IN03", value=True, elem_id="autombw_in03")
-                chk_IN_04 = gr.Checkbox(label="IN04", value=True, elem_id="autombw_in04")
-                chk_IN_05 = gr.Checkbox(label="IN05", value=True, elem_id="autombw_in05")
-                chk_IN_06 = gr.Checkbox(label="IN06", value=True, elem_id="autombw_in06")
-                chk_IN_07 = gr.Checkbox(label="IN07", value=True, elem_id="autombw_in07")
-                chk_IN_08 = gr.Checkbox(label="IN08", value=True, elem_id="autombw_in08")
-                chk_IN_09 = gr.Checkbox(label="IN09", value=True, elem_id="autombw_in09")
-                chk_IN_10 = gr.Checkbox(label="IN10", value=True, elem_id="autombw_in10")
-                chk_IN_11 = gr.Checkbox(label="IN11", value=True, elem_id="autombw_in11")
+                with gr.Row():
+                    chk_IN_00 = gr.Checkbox(label="IN00", value=True, elem_id="autombw_in00")
+                    sl_IN_00 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN00", Value=0, elem_id="autombw_in00_sl", visible=False)
+                with gr.Row():
+                    chk_IN_01 = gr.Checkbox(label="IN01", value=True, elem_id="autombw_in01")
+                    sl_IN_01 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN01", Value=0, elem_id="autombw_in01_sl", visible=False)
+                with gr.Row():
+                    chk_IN_02 = gr.Checkbox(label="IN02", value=True, elem_id="autombw_in02")
+                    sl_IN_02 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN02", Value=0, elem_id="autombw_in02_sl", visible=False)
+                with gr.Row():
+                    chk_IN_03 = gr.Checkbox(label="IN03", value=True, elem_id="autombw_in03")
+                    sl_IN_03 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN03", Value=0, elem_id="autombw_in03_sl", visible=False)
+                with gr.Row():
+                    chk_IN_04 = gr.Checkbox(label="IN04", value=True, elem_id="autombw_in04")
+                    sl_IN_04 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN04", Value=0, elem_id="autombw_in04_sl", visible=False)
+                with gr.Row():
+                    chk_IN_05 = gr.Checkbox(label="IN05", value=True, elem_id="autombw_in05")
+                    sl_IN_05 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN05", Value=0, elem_id="autombw_in05_sl", visible=False)
+                with gr.Row():
+                    chk_IN_06 = gr.Checkbox(label="IN06", value=True, elem_id="autombw_in06")
+                    sl_IN_06 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN06", Value=0, elem_id="autombw_in06_sl", visible=False)
+                with gr.Row():
+                    chk_IN_07 = gr.Checkbox(label="IN07", value=True, elem_id="autombw_in07")
+                    sl_IN_07 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN07", Value=0, elem_id="autombw_in07_sl", visible=False)
+                with gr.Row():
+                    chk_IN_08 = gr.Checkbox(label="IN08", value=True, elem_id="autombw_in08")
+                    sl_IN_08 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN08", Value=0, elem_id="autombw_in08_sl", visible=False)
+                with gr.Row():
+                    chk_IN_09 = gr.Checkbox(label="IN09", value=True, elem_id="autombw_in09")
+                    sl_IN_09 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN09", Value=0, elem_id="autombw_in09_sl", visible=False)
+                with gr.Row():
+                    chk_IN_10 = gr.Checkbox(label="IN10", value=True, elem_id="autombw_in10")
+                    sl_IN_10 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN10", Value=0, elem_id="autombw_in10_sl", visible=False)
+                with gr.Row():
+                    chk_IN_11 = gr.Checkbox(label="IN11", value=True, elem_id="autombw_in11")
+                    sl_IN_11 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="IN11", Value=0, elem_id="autombw_in11_sl", visible=False)
             with gr.Column():
-                sl_B_ALL = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Test Base", Value=0.5, elem_id="autombw_test_base")
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                gr.Checkbox(visible=False)
-                chk_M_00 = gr.Checkbox(label="M00", value=True, elem_id="autombw_m00")
+                with gr.Row():
+                    chk_M_00 = gr.Checkbox(label="M00", value=True, elem_id="autombw_m00")
+                    sl_M_00 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="M00", Value=0, elem_id="autombw_m00_sl", visible=False)
             with gr.Column():
-                chk_OUT_00 = gr.Checkbox(label="OUT00", value=True, elem_id="autombw_out00")
-                chk_OUT_01 = gr.Checkbox(label="OUT01", value=True, elem_id="autombw_out01")
-                chk_OUT_02 = gr.Checkbox(label="OUT02", value=True, elem_id="autombw_out02")
-                chk_OUT_03 = gr.Checkbox(label="OUT03", value=True, elem_id="autombw_out03")
-                chk_OUT_04 = gr.Checkbox(label="OUT04", value=True, elem_id="autombw_out04")
-                chk_OUT_05 = gr.Checkbox(label="OUT05", value=True, elem_id="autombw_out05")
-                chk_OUT_06 = gr.Checkbox(label="OUT06", value=True, elem_id="autombw_out06")
-                chk_OUT_07 = gr.Checkbox(label="OUT07", value=True, elem_id="autombw_out07")
-                chk_OUT_08 = gr.Checkbox(label="OUT08", value=True, elem_id="autombw_out08")
-                chk_OUT_09 = gr.Checkbox(label="OUT09", value=True, elem_id="autombw_out09")
-                chk_OUT_10 = gr.Checkbox(label="OUT10", value=True, elem_id="autombw_out10")
-                chk_OUT_11 = gr.Checkbox(label="OUT11", value=True, elem_id="autombw_out11")
+                with gr.Row():
+                    chk_OUT_00 = gr.Checkbox(label="OUT00", value=True, elem_id="autombw_out00")
+                    sl_OUT_00 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT00", Value=0, elem_id="autombw_out00_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_01 = gr.Checkbox(label="OUT01", value=True, elem_id="autombw_out01")
+                    sl_OUT_01 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT01", Value=0, elem_id="autombw_out01_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_02 = gr.Checkbox(label="OUT02", value=True, elem_id="autombw_out02")
+                    sl_OUT_02 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT02", Value=0, elem_id="autombw_out02_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_03 = gr.Checkbox(label="OUT03", value=True, elem_id="autombw_out03")
+                    sl_OUT_03 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT03", Value=0, elem_id="autombw_out03_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_04 = gr.Checkbox(label="OUT04", value=True, elem_id="autombw_out04")
+                    sl_OUT_04 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT04", Value=0, elem_id="autombw_out04_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_05 = gr.Checkbox(label="OUT05", value=True, elem_id="autombw_out05")
+                    sl_OUT_05 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT05", Value=0, elem_id="autombw_out05_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_06 = gr.Checkbox(label="OUT06", value=True, elem_id="autombw_out06")
+                    sl_OUT_06 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT06", Value=0, elem_id="autombw_out06_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_07 = gr.Checkbox(label="OUT07", value=True, elem_id="autombw_out07")
+                    sl_OUT_07 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT07", Value=0, elem_id="autombw_out07_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_08 = gr.Checkbox(label="OUT08", value=True, elem_id="autombw_out08")
+                    sl_OUT_08 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT08", Value=0, elem_id="autombw_out08_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_09 = gr.Checkbox(label="OUT09", value=True, elem_id="autombw_out09")
+                    sl_OUT_09 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT09", Value=0, elem_id="autombw_out09_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_10 = gr.Checkbox(label="OUT10", value=True, elem_id="autombw_out10")
+                    sl_OUT_10 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT10", Value=0, elem_id="autombw_out10_sl", visible=False)
+                with gr.Row():
+                    chk_OUT_11 = gr.Checkbox(label="OUT11", value=True, elem_id="autombw_out11")
+                    sl_OUT_11 = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="OUT11", Value=0, elem_id="autombw_out11_sl", visible=False)
 
     chks = [
         chk_IN_00, chk_IN_01, chk_IN_02, chk_IN_03, chk_IN_04, chk_IN_05,
@@ -162,6 +204,13 @@ def on_ui_tabs():
         chk_OUT_00, chk_OUT_01, chk_OUT_02, chk_OUT_03, chk_OUT_04, chk_OUT_05,
         chk_OUT_06, chk_OUT_07, chk_OUT_08, chk_OUT_09, chk_OUT_10, chk_OUT_11,
         chk_base_alpha]
+
+    sliders = [sl_IN_00, sl_IN_01, sl_IN_02, sl_IN_03, sl_IN_04, sl_IN_05,
+        sl_IN_06, sl_IN_07, sl_IN_08, sl_IN_09, sl_IN_10, sl_IN_11,
+        sl_M_00,
+        sl_OUT_00, sl_OUT_01, sl_OUT_02, sl_OUT_03, sl_OUT_04, sl_OUT_05,
+        sl_OUT_06, sl_OUT_07, sl_OUT_08, sl_OUT_09, sl_OUT_10, sl_OUT_11,
+        sl_base_alpha]
 
     # Events
     def onclick_btn_do_merge_block_weighted(
@@ -172,7 +221,13 @@ def on_ui_tabs():
         chk_OUT_00, chk_OUT_01, chk_OUT_02, chk_OUT_03, chk_OUT_04, chk_OUT_05,
         chk_OUT_06, chk_OUT_07, chk_OUT_08, chk_OUT_09, chk_OUT_10, chk_OUT_11,
         chk_base_alpha,
-        sl_B_ALL
+        sl_IN_00, sl_IN_01, sl_IN_02, sl_IN_03, sl_IN_04, sl_IN_05,
+        sl_IN_06, sl_IN_07, sl_IN_08, sl_IN_09, sl_IN_10, sl_IN_11,
+        sl_M_00,
+        sl_OUT_00, sl_OUT_01, sl_OUT_02, sl_OUT_03, sl_OUT_04, sl_OUT_05,
+        sl_OUT_06, sl_OUT_07, sl_OUT_08, sl_OUT_09, sl_OUT_10, sl_OUT_11,
+        sl_base_alpha,
+        sl_B_ALL,
         txt_model_O, chk_verbose_mbw, chk_allow_overwrite, chk_use_ramdisk,
         chk_save_as_safetensors, chk_save_as_half,
         radio_position_ids,
@@ -195,6 +250,7 @@ def on_ui_tabs():
 
         #defining lists and dicts
         savedweights = [float(sl_B_ALL)] * 26
+
         chks = {
         "0":chk_IN_00, "1":chk_IN_01, "2":chk_IN_02, "3":chk_IN_03, "4":chk_IN_04, "5":chk_IN_05,
         "6":chk_IN_06, "7":chk_IN_07, "8":chk_IN_08, "9":chk_IN_09, "10":chk_IN_10, "11":chk_IN_11,
@@ -202,6 +258,18 @@ def on_ui_tabs():
         "13":chk_OUT_00, "14":chk_OUT_01, "15":chk_OUT_02, "16":chk_OUT_03, "17":chk_OUT_04, "18":chk_OUT_05,
         "19":chk_OUT_06, "20":chk_OUT_07, "21":chk_OUT_08, "22":chk_OUT_09, "23":chk_OUT_10, "24":chk_OUT_11,
         "25":chk_base_alpha}
+
+        sliders = {
+        "0":sl_IN_00, "1":sl_IN_01, "2":sl_IN_02, "3":sl_IN_03, "4":sl_IN_04, "5":sl_IN_05,
+        "6":sl_IN_06, "7":sl_IN_07, "8":sl_IN_08, "9":sl_IN_09, "10":sl_IN_10, "11":sl_IN_11,
+        "12":sl_M_00,
+        "13":sl_OUT_00, "14":sl_OUT_01, "15":sl_OUT_02, "16":sl_OUT_03, "17":sl_OUT_04, "18":sl_OUT_05,
+        "19":sl_OUT_06, "20":sl_OUT_07, "21":sl_OUT_08, "22":sl_OUT_09, "23":sl_OUT_10, "24":sl_OUT_11,
+        "25":sl_base_alpha}
+
+        for key in chks:
+            if chks[key] == False:
+                savedweights[int(key)] = sliders[key]
 
         def merge_wrapper(key, testval, final=False):
             print( "starting merge...")
@@ -326,6 +394,7 @@ def on_ui_tabs():
                 print("merge failed.")
 
             # save log to history.tsv
+            weight_name = ""
             if final:
                 sd_models.list_models()
                 model_A_info = sd_models.get_closet_checkpoint_match(model_A)
@@ -334,7 +403,6 @@ def on_ui_tabs():
                 if hasattr(model_O_info, "sha256") and model_O_info.sha256 is None:
                     model_O_info:CheckpointInfo = model_O_info
                     model_O_info.sha256 = hashes.sha256(model_O_info.filename, "checkpoint/" + model_O_info.title)
-                weight_name = ""
                 def model_name(model_info):
                     return model_info.name if hasattr(model_info, "name") else model_info.title
                 def model_sha256(model_info):
@@ -356,6 +424,12 @@ def on_ui_tabs():
                         )
                 return ret_html
             else:
+                testMergeHistory.add_history(
+                    base_alpha,
+                    _weights,
+                    "",
+                    weight_name
+                    )
                 return testscore
 
         #parsing test increments
@@ -391,7 +465,8 @@ def on_ui_tabs():
                         if len(binary_test_increments) == 1:
                             savedweights[int(key)] = float(lower)
                             scores.update({str(key):{str(lower):lowerscore}})
-                            next_carry = (savedweights(int(key)+1), carry_val)
+                            if len(savedweights) > int(key) + 1:
+                                next_carry = (savedweights[int(key)+1], carry_val)
                             break
 
                         if lower == next_carry[0]:
@@ -419,6 +494,7 @@ def on_ui_tabs():
         fn=onclick_btn_do_merge_block_weighted,
         inputs=[model_A, model_B]
             + chks
+            + sliders
             + [sl_B_ALL]
             + [txt_model_O, chk_verbose_mbw, chk_allow_overwrite, chk_use_ramdisk]
             + [chk_save_as_safetensors, chk_save_as_half, radio_position_ids]
@@ -471,4 +547,16 @@ def on_ui_tabs():
     outputs=[hr_options],
     show_progress = False,
     )
+
+    def gr_show_inverse(visible=False):
+        return {"visible": not visible, "__type__": "update"}
+
+    for chk in chks:
+        slider = sliders[chks.index(chk)]
+        chk.change(
+            fn=lambda x: gr_show_inverse(x),
+            inputs=[chk],
+            outputs=[slider],
+            show_progress = False,
+        )
 
