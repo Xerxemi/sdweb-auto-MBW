@@ -52,9 +52,9 @@ def on_ui_tabs():
             steps = gr.Slider(minimum=1, maximum=150, step=1, elem_id=f"{tabname}_steps", label="Sampling steps", value=20)
         return steps, sampler
     with gr.Column():
-        html_output_block_weight_info = gr.HTML()
         with gr.Row():
             with gr.Column(variant="panel"):
+                html_output_block_weight_info = gr.HTML()
                 with gr.Row():
                     steps, sampler = create_sampler_and_steps_selection(samplers, "autombw")
                 with FormRow():
@@ -92,10 +92,10 @@ def on_ui_tabs():
                     txt_block_test_increments = gr.Text(label="Test Increments", placeholder="0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1", elem_id="autombw_test_increments")
                 with gr.Row():
                     with gr.Column():
+                        sl_B_ALL = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Test Base", Value=0, elem_id="autombw_test_base")
                         with gr.Row():
                             chk_base_alpha = gr.Checkbox(label="base_alpha", value=True, elem_id="autombw_base_alpha")
                             sl_base_alpha = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="base_alpha", Value=0, elem_id="autombw_base_alpha_sl", visible=False)
-                        sl_B_ALL = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Test Base", Value=0, elem_id="autombw_test_base")
                     chk_verbose_mbw = gr.Checkbox(label="verbose console", value=False, elem_id="autombw_verbose_mbw")
                     chk_allow_overwrite = gr.Checkbox(label="Allow overwrite", value=True, interactive=False, elem_id="autombw_allow_overwrite")
                     chk_use_ramdisk = gr.Checkbox(label="Use ramdisk (Linux)", value=False, elem_id="autombw_use_ramdisk")
@@ -111,7 +111,7 @@ def on_ui_tabs():
                             dropdown_classifiers = gr.Dropdown(label='Classifier', elem_id="autombw_classifiers", choices=[*discovered_plugins.keys()], value=[*discovered_plugins.keys()][0])
                     with gr.Column():
                         with gr.Row():
-                            radio_tally_type = gr.Radio(label="Tally Type", choices=["Mean", "Median"], value="Mean", elem_id="autombw_tally_type")
+                            radio_tally_type = gr.Radio(label="Tally Type", choices=["Mean", "Geometric Mean", "Harmonic Mean", "Median", "Fuzzy Mode"], value="Mean", elem_id="autombw_tally_type")
                             radio_search_type = gr.Radio(label="Search Type", choices=["Linear", "Binary"], value="Linear", elem_id="autombw_search_type")
         with gr.Row():
             model_A = gr.Dropdown(label="Model A", choices=sd_models.checkpoint_tiles(), elem_id="autombw_model_a")
@@ -380,8 +380,19 @@ def on_ui_tabs():
                     imagescores.append(score)
                 if radio_tally_type == "Mean":
                     testscore = statistics.mean(imagescores)
+                elif radio_tally_type == "Geometric Mean":
+                    testscore = statistics.geometric_mean(imagescores)
+                elif radio_tally_type == "Harmonic Mean":
+                    testscore = statistics.harmonic_mean(imagescores)
                 elif radio_tally_type == "Median":
                     testscore = statistics.median(imagescores)
+                elif radio_tally_type == "Fuzzy Mode":
+                    normscores = [float(i)/max(imagescores) for i in imagescores]
+                    fuzzyscores = []
+                    for score in normscores:
+                        for i in range(1000):
+                            fuzzyscores.append(round(i+(random.random()/100), 2))
+                    testscore = statistics.mode(fuzzyscores)*max(imagescores)
                 if not final:
                     if os.path.islink(_output):
                         os.remove(os.path.realpath(_output))
