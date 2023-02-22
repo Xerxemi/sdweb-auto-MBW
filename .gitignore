@@ -1,5 +1,5 @@
-/csv/history.tsv
-/csv/test_history.tsv
+/csv/*
+!/csv/preset.tsv
 
 #
 _*

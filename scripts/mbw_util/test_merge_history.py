@@ -10,17 +10,12 @@ from modules import scripts
 
 
 CSV_FILE_ROOT = "csv/"
-CSV_FILE_PATH = "csv/history.tsv"
+CSV_FILE_PATH = "csv/test_history.tsv"
 HEADERS = [
-        "model_A", "model_A_hash", "model_A_sha256",
-        "model_B", "model_B_hash", "model_B_sha256",
-        "model_O", "model_O_hash", "model_O_sha256",
-        "base_alpha", "weight_name", "weight_values", "weight_values2", "datetime",
-        "positive_prompt", "negative_prompt"]
+        "base_alpha", "weight_name", "weight_values", "weight_values2", "datetime", "positive_prompt", "negative_prompt"]
 path_root = scripts.basedir()
 
-
-class MergeHistory():
+class TestMergeHistory():
     def __init__(self):
         self.fileroot = os.path.join(path_root, CSV_FILE_ROOT)
         self.filepath = os.path.join(path_root, CSV_FILE_PATH)
@@ -30,9 +25,6 @@ class MergeHistory():
             self.update_header()
 
     def add_history(self,
-                model_A_name, model_A_hash, model_A_sha256,
-                model_B_name, model_B_hash, model_B_sha256,
-                model_O_name, model_O_hash, model_O_sha256,
                 sl_base_alpha,
                 weight_value_A,
                 weight_value_B,
@@ -40,15 +32,6 @@ class MergeHistory():
                 positive_prompt, negative_prompt):
         _history_dict = {}
         _history_dict.update({
-            "model_A": model_A_name,
-            "model_A_hash": model_A_hash,
-            "model_A_sha256": model_A_sha256,
-            "model_B": model_B_name,
-            "model_B_hash": model_B_hash,
-            "model_B_sha256": model_B_sha256,
-            "model_O": model_O_name,
-            "model_O_hash": model_O_hash,
-            "model_O_sha256": model_O_sha256,
             "base_alpha": sl_base_alpha,
             "weight_name": weight_name,
             "weight_values": weight_value_A,
