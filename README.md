@@ -3,6 +3,8 @@ An automated (yes, that's right, **AUTOMATIC**) version of bbc-mc's sdweb-merge-
 
 Extremely deviated codebase & UI.
 
+Example models here: https://huggingface.co/Xynon/SD-Silicon
+
 ----
 
 Made by both Xynon#7407 and Xerxemi#6423.
