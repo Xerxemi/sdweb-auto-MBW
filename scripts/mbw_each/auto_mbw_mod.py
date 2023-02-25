@@ -756,7 +756,9 @@ def on_ui_tabs():
                     lowerscore = 1
                     middlescore = 1
                     upperscore = 1
-                    carry_val = None
+                    carry_dict = {}
+                    if next_carry[0] != None and next_carry[1] != None:
+                        carry_dict.update({(next_carry[0], next_carry[1]):next_carry[2]})
                     while True:
                         lower_a = binary_test_increments_a[0]
                         middle_a = binary_test_increments_a[((len(binary_test_increments_a)+1)//2)-1]
@@ -765,13 +767,7 @@ def on_ui_tabs():
                         middle_b = binary_test_increments_b[((len(binary_test_increments_b)+1)//2)-1]
                         upper_b = binary_test_increments_b[-1]
                         if len(binary_test_increments_a) == 1 and len(binary_test_increments_b) == 1:
-                            print(chk_score_default)
-                            if next_carry[2] < carry_val:
-                                print("larger")
-                            if not carry_val:
-                                print(carry_val)
-                            if chk_score_default == False or next_carry[2] < carry_val or not carry_val:
-                                print("overwrite")
+                            if chk_score_default == False or next_carry[2] < max([*carry_dict.values()]):
                                 for key in keys:
                                     if int(key) == 25:
                                         saved_base_alpha = float(lower_a)
@@ -779,50 +775,42 @@ def on_ui_tabs():
                                         savedweights_a[int(key)] = float(lower_a)
                                         savedweights_b[int(key)] = float(lower_b)
                                     scores.update({str(key):{(lower_a, lower_b):lowerscore}})
-                            else:
-                                print("SKIPPPED")
-                                carry_val = next_carry[2]
                             if int(full_keys.index(keys[-1])) + len(keys) < len(full_keys):
                                 next_key = int(full_keys[int(full_keys.index(keys[-1])) + len(keys)])
                                 if len(savedweights_a) > next_key and len(savedweights_b) > next_key:
-                                    next_carry = (savedweights_a[next_key], savedweights_b[next_key], carry_val)
+                                    next_carry = (savedweights_a[next_key], savedweights_b[next_key], [*carry_dict.values()])
                             break
 
-                        if lower_a == next_carry[0] and lower_b == next_carry[1]:
-                            lowerscore = next_carry[2]
+                        if (lower_a, lower_b) in [*carry_dict.keys()]:
+                            lowerscore = carry_dict[(lower_a, lower_b)]
                         else:
-                            if carry_val != lowerscore:
-                                merge_params_a = arrange_keys(keys, lower_a)
-                                merge_params_b = arrange_keys(keys, lower_b)
-                                lowerscore = merge_wrapper(merge_params_a, merge_params_b)
-                        if middle_a == next_carry[0] and middle_b == next_carry[1]:
-                            middlescore = next_carry[2]
+                            merge_params_a = arrange_keys(keys, lower_a)
+                            merge_params_b = arrange_keys(keys, lower_b)
+                            lowerscore = merge_wrapper(merge_params_a, merge_params_b)
+                        if (middle_a, middle_b) in [*carry_dict.keys()]:
+                            middlescore = carry_dict[(middle_a, middle_b)]
                         else:
-                            if carry_val != middlescore:
-                                merge_params_a = arrange_keys(keys, middle_a)
-                                merge_params_b = arrange_keys(keys, middle_b)
-                                middlescore = merge_wrapper(merge_params_a, merge_params_b)
-                        if upper_a == next_carry[0] and upper_b == next_carry[1]:
-                            upperscore = next_carry[2]
+                            merge_params_a = arrange_keys(keys, middle_a)
+                            merge_params_b = arrange_keys(keys, middle_b)
+                            middlescore = merge_wrapper(merge_params_a, merge_params_b)
+                        if (upper_a, upper_b) in [*carry_dict.keys()]:
+                            upperscore = carry_dict[(upper_a, upper_b)]
                         else:
-                            if carry_val != upperscore:
-                                merge_params_a = arrange_keys(keys, upper_a)
-                                merge_params_b = arrange_keys(keys, upper_b)
-                                upperscore = merge_wrapper(merge_params_a, merge_params_b)
+                            merge_params_a = arrange_keys(keys, upper_a)
+                            merge_params_b = arrange_keys(keys, upper_b)
+                            upperscore = merge_wrapper(merge_params_a, merge_params_b)
 
                         score_list = [lowerscore, middlescore, upperscore]
+                        carry_dict.update({(lower_a, lower_b):lowerscore, (middle_a, middle_b):middlescore, (upper_a, upper_b):upperscore})
                         if lowerscore == max(score_list):
                             binary_test_increments_a = binary_test_increments_a[:len(binary_test_increments_a)//2]
                             binary_test_increments_b = binary_test_increments_b[:len(binary_test_increments_b)//2]
-                            carry_val = lowerscore
                         elif middlescore == max(score_list):
                             binary_test_increments_a = binary_test_increments_a[len(binary_test_increments_a)//4:-len(binary_test_increments_a)//4]
                             binary_test_increments_b = binary_test_increments_b[len(binary_test_increments_b)//4:-len(binary_test_increments_b)//4]
-                            carry_val = middlescore
                         elif upperscore == max(score_list):
                             binary_test_increments_a = binary_test_increments_a[len(binary_test_increments_a)//2:]
                             binary_test_increments_b = binary_test_increments_b[len(binary_test_increments_b)//2:]
-                            carry_val = upperscore
 
         for model_A, model_B, txt_model_O in zip(multi_model_A, multi_model_B, multi_model_O):
             if chk_multi_merge_seed_progessive == True and seed != -1:
