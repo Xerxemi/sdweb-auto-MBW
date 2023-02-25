@@ -20,8 +20,8 @@ except:
     pass
 
 from scripts.mbw_each.merge_block_weighted_mod import merge
-from scripts.util.txt2img_api import txt2img, refresh_models
-from scripts.util.util_funcs import grouped
+from scripts.util_autombw.txt2img_api import txt2img, refresh_models
+from scripts.util_autombw.util_funcs import grouped
 from scripts.mbw_util.merge_history import MergeHistory
 from scripts.mbw_util.test_merge_history import TestMergeHistory
 from scripts.mbw_util.preset_weights import PresetWeights
@@ -37,6 +37,9 @@ plugins_count = 0
 for _, dirs, _ in os.walk(classifiers_path):
     for directory in dirs:
         directory_path = os.path.join(classifiers_path, directory)
+        # exclude __pycache__ directory
+        if directory_path.endswith('__pycache__'):
+            continue
         for module in os.listdir(directory_path):
             if module.startswith('score_') and module.endswith('.py'):
                 module_name = os.path.splitext(module)[0]
