@@ -1,3 +1,6 @@
+import datetime
+from pathlib import Path
+
 import gradio as gr
 import os
 import sys
@@ -127,6 +130,7 @@ def on_ui_tabs():
                         with gr.Row():
                             chk_save_as_half = gr.Checkbox(label="Save as half", value=True, elem_id="autombwe_save_as_half")
                             chk_save_as_safetensors = gr.Checkbox(label="Save as safetensors", value=False, elem_id="autombwe_save_as_safetensors")
+                            chk_save_output_images = gr.Checkbox(label="Save output images", value=False, elem_id="autombwe_save_output_images")
                     with gr.Column():
                         radio_position_ids = gr.Radio(label="Skip/Reset CLIP position_ids", choices=["None", "Skip", "Force Reset"], value="None", type="index", elem_id="autombwe_position_ids")
                     with gr.Column():
@@ -293,7 +297,7 @@ def on_ui_tabs():
         sl_OUT_06_B, sl_OUT_07_B, sl_OUT_08_B, sl_OUT_09_B, sl_OUT_10_B, sl_OUT_11_B,
         sl_base_alpha,
         txt_model_O, chk_verbose_mbw, chk_allow_overwrite, chk_use_ramdisk,
-        chk_save_as_safetensors, chk_save_as_half,
+        chk_save_as_safetensors, chk_save_as_half, chk_save_output_images,
         radio_position_ids,
         dropdown_search_type, dropdown_classifiers, dropdown_pass_count, dropdown_tally_type, dropdown_tally_type_2, dropdown_tally_type_3,
         txt_block_test_increments, chk_score_default, txt_block_multi_merge,
@@ -487,11 +491,27 @@ def on_ui_tabs():
                 else:
                     images2 = []
                 imagescores = []
-                for image in images + images2:
+                for idx, image in enumerate(images + images2):
                     #classifier plugin stuff
                     classifier = discovered_plugins[dropdown_classifiers]
                     score = classifier.score(image)
                     imagescores.append(score)
+                    # timestamp without spaces
+                    if chk_save_output_images:
+                        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+                        output_name = f"{idx}.png"
+                        folder_name = f"{_model_A_name}-{_model_B_info}-{timestamp}"
+                        os.makedirs(os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name))
+                        output_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, output_name)
+                        output_txt_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, "000-weights.txt")
+                        image.save(output_path)
+                        with open(output_txt_path, 'w') as f:
+                            f.write(_weights_a)
+                            f.write('\n')
+                            f.write(_weights_b)
+                            f.write('\n')
+                            f.write("Base Alpha:")
+                            f.write(base_alpha)
                 normscores = [float(i)/max(imagescores) for i in imagescores]
 
                 if current_pass == 0:
@@ -861,7 +881,7 @@ def on_ui_tabs():
             + chks
             + sliders
             + [txt_model_O, chk_verbose_mbw, chk_allow_overwrite, chk_use_ramdisk]
-            + [chk_save_as_safetensors, chk_save_as_half, radio_position_ids]
+            + [chk_save_as_safetensors, chk_save_as_half, chk_save_output_images, radio_position_ids]
             + [dropdown_search_type, dropdown_classifiers, dropdown_pass_count, dropdown_tally_type, dropdown_tally_type_2, dropdown_tally_type_3]
             + [txt_block_test_increments, chk_score_default, txt_block_multi_merge]
             + [enable_hr, denoising_strength, hr_scale, hr_upscaler, hr_second_pass_steps, hr_resize_x, hr_resize_y]
