@@ -5,6 +5,8 @@ Extremely deviated codebase & UI.
 
 Example models here: https://huggingface.co/Xynon/SD-Silicon
 
+Preliminary article here: https://medium.com/@media_97267/the-automated-stable-diffusion-checkpoint-merger-autombw-44f8dfd38871
+
 ----
 
 Made by both Xynon#7407 and Xerxemi#6423.
