@@ -490,6 +490,16 @@ def on_ui_tabs():
                         prompt=positive_prompt_2, seed=seed, sampler_name=sampler, batch_size=batch_size, n_iter=batch_count, steps=steps, cfg_scale=cfg_scale, width=width, height=height, restore_faces=restore_faces, tiling=tiling, negative_prompt=negative_prompt_2)
                 else:
                     images2 = []
+                folder_name = f"{_model_A_name}-{_model_B_info}-{timestamp}"
+                os.makedirs(os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name))
+                output_txt_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, "000-weights.txt")
+                with open(output_txt_path, 'w') as f:
+                    f.write(_weights_a)
+                    f.write('\n')
+                    f.write(_weights_b)
+                    f.write('\n')
+                    f.write("Base Alpha:")
+                    f.write(str(base_alpha))
                 imagescores = []
                 for idx, image in enumerate(images + images2):
                     #classifier plugin stuff
@@ -500,18 +510,8 @@ def on_ui_tabs():
                     if chk_save_output_images:
                         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
                         output_name = f"{idx}.png"
-                        folder_name = f"{_model_A_name}-{_model_B_info}-{timestamp}"
-                        os.makedirs(os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name))
                         output_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, output_name)
-                        output_txt_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, "000-weights.txt")
                         image.save(output_path)
-                        with open(output_txt_path, 'w') as f:
-                            f.write(_weights_a)
-                            f.write('\n')
-                            f.write(_weights_b)
-                            f.write('\n')
-                            f.write("Base Alpha:")
-                            f.write(str(base_alpha))
 
                 normscores = [float(i)/max(imagescores) for i in imagescores]
 
