@@ -450,7 +450,7 @@ def on_ui_tabs():
                             f.write(_weights)
                             f.write('\n')
                             f.write("Base Alpha:")
-                            f.write(base_alpha)
+                            f.write(str(base_alpha))
 
                 normscores = [float(i)/max(imagescores) for i in imagescores]
 
