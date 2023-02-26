@@ -432,9 +432,9 @@ def on_ui_tabs():
                 else:
                     images2 = []
                 folder_name = f"{_model_A_name}-{_model_B_info}-{timestamp}"
-                os.makedirs(os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name))
-                output_txt_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, "000-weights.txt")
-                with open(output_txt_path, 'w') as f:
+                folder_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name)
+                os.makedirs(folder_path)
+                with open(os.path.join(folder_path, "000-weights.txt"), 'w') as f:
                     f.write(_weights)
                     f.write('\n')
                     f.write("Base Alpha:")
@@ -449,8 +449,7 @@ def on_ui_tabs():
                     if chk_save_output_images:
                         timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
                         output_name = f"{idx}.png"
-                        output_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name, output_name)
-                        image.save(output_path)
+                        image.save(os.path.join(folder_path, output_name))
 
                 normscores = [float(i)/max(imagescores) for i in imagescores]
 
