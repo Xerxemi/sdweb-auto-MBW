@@ -490,6 +490,8 @@ def on_ui_tabs():
                         prompt=positive_prompt_2, seed=seed, sampler_name=sampler, batch_size=batch_size, n_iter=batch_count, steps=steps, cfg_scale=cfg_scale, width=width, height=height, restore_faces=restore_faces, tiling=tiling, negative_prompt=negative_prompt_2)
                 else:
                     images2 = []
+                # timestamp without spaces
+                timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
                 folder_name = f"{_model_A_name}-{_model_B_info}-{timestamp}"
                 folder_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name)
                 os.makedirs(folder_path)
@@ -506,9 +508,7 @@ def on_ui_tabs():
                     classifier = discovered_plugins[dropdown_classifiers]
                     score = classifier.score(image)
                     imagescores.append(score)
-                    # timestamp without spaces
                     if chk_save_output_images:
-                        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
                         output_name = f"{idx}.png"
                         image.save(os.path.join(folder_path, output_name))
 
