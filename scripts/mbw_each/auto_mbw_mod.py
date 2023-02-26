@@ -495,13 +495,6 @@ def on_ui_tabs():
                 folder_path = os.path.join(shared.cmd_opts.data_dir, 'auto_mbw_output', folder_name)
                 if chk_save_output_images:
                     os.makedirs(folder_path)
-                    with open(os.path.join(folder_path, "000-weights.txt"), 'w') as f:
-                        f.write(_weights_a)
-                        f.write('\n')
-                        f.write(_weights_b)
-                        f.write('\n')
-                        f.write("Base Alpha:")
-                        f.write(str(base_alpha))
                 imagescores = []
                 for idx, image in enumerate(images + images2):
                     #classifier plugin stuff
@@ -553,6 +546,19 @@ def on_ui_tabs():
                     os.remove(_output)
                 print("test score: " + str(testscore))
                 refresh_models()
+                if chk_save_output_images:
+                    with open(os.path.join(folder_path, "000-weights.txt"), 'w') as f:
+                        f.write("Weights A: ")
+                        f.write(_weights_a)
+                        f.write('\n')
+                        f.write("Weights B: ")
+                        f.write(_weights_b)
+                        f.write('\n')
+                        f.write("Base Alpha: ")
+                        f.write(str(base_alpha))
+                        f.write("\n")
+                        f.write("Test Score: ")
+                        f.write(str(testscore))
 
             else:
                 ret_html = ret_message
