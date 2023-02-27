@@ -21,4 +21,6 @@ You can find the original here: https://github.com/bbc-mc/sdweb-merge-block-weig
 
 Wiki/Documentation
 
+Note: This needs --api in COMMANDLINE_ARGS and conflicts with the original MBW extension.
+
 *coming soon<sup>TM</sup>*
