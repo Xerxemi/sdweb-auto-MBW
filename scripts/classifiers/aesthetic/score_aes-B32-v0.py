@@ -12,7 +12,7 @@ clipmodel = CLIPModel.from_pretrained(clip_name).to('cuda').eval()
 aes_model = Classifier(512, 256, 1).to('cuda')
 aes_model.load_state_dict(safetensors.torch.load_file(aesthetic_path))
 
-def score(image):
+def score(image, prompt=""):
     image_embeds = image_embeddings_direct(image, clipmodel, clipprocessor)
     prediction = aes_model(torch.from_numpy(image_embeds).float().to('cuda'))
     return prediction.item()
