@@ -432,10 +432,15 @@ def on_ui_tabs():
                 else:
                     images2 = []
                 imagescores = []
-                for image in images + images2:
+                for image in images:
                     #classifier plugin stuff
                     classifier = discovered_plugins[dropdown_classifiers]
-                    score = classifier.score(image)
+                    score = classifier.score(image,positive_prompt)
+                    imagescores.append(score)
+                for image in images2:
+                    #classifier plugin stuff
+                    classifier = discovered_plugins[dropdown_classifiers]
+                    score = classifier.score(image,positive_prompt_2)
                     imagescores.append(score)
 
                 normscores = [float(i)/max(imagescores) for i in imagescores]
