@@ -7,6 +7,8 @@ Example models here: https://huggingface.co/Xynon/SD-Silicon
 
 Preliminary article here: https://medium.com/@media_97267/the-automated-stable-diffusion-checkpoint-merger-autombw-44f8dfd38871
 
+Update: A V2 is in the works with completely rewritten internals & ui, and lots of juicy features.
+
 ----
 
 Made by both Xynon#7407 and Xerxemi#6423.
