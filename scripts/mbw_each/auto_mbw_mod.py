@@ -326,9 +326,6 @@ def on_ui_tabs():
             multi_model_B = [model_B]
             multi_model_O = [txt_model_O]
 
-        #weird webui replacement shenanigans
-        random_number = 0
-
         #seed settings
         if chk_keep_random_seed == True:
             seed = -1
@@ -420,13 +417,8 @@ def on_ui_tabs():
 
                 #to get around webui not handling replacements correctly
                 if not final:
-                    nonlocal random_number
-                    while True:
-                        local_random_number = random.randint(0, 1000)
-                        if local_random_number != random_number:
-                            random_number = local_random_number
-                            break
-                    _footer = _footer + str(random_number)
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+                    _footer = _footer + str(timestamp)
 
                 if filename_ext in [".safetensors", ".ckpt"]:
                     _ret = f"{filename_body}{_footer}{filename_ext}"
@@ -536,7 +528,7 @@ def on_ui_tabs():
                     if os.path.islink(_output):
                         os.remove(os.path.realpath(_output))
                     os.remove(_output)
-                print("test score: " + str(testscore))
+                print(local_dropdown_tally_type + " test score: " + str(testscore))
                 refresh_models()
                 if chk_save_output_images:
                     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -600,6 +592,8 @@ def on_ui_tabs():
                     _weights_a,
                     _weights_b,
                     weight_name,
+                    local_dropdown_tally_type,
+                    testscore,
                     positive_prompt,
                     negative_prompt
                     )
@@ -847,6 +841,7 @@ def on_ui_tabs():
             saved_base_alpha = sl_base_alpha
             scores = {}
             for current_pass in range(dropdown_pass_count + 1):
+                print("current_pass:" + str(current_pass))
                 if chk_multi_pass_seed_progessive == True and seed != -1:
                     seed = seed + 1
                 #prechks - base alpha & m00
