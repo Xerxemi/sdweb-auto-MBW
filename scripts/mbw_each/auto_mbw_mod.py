@@ -556,6 +556,16 @@ def on_ui_tabs():
 
             # save log to history.tsv
             weight_name = ""
+            testMergeHistory.add_history(
+                base_alpha,
+                _weights_a,
+                _weights_b,
+                weight_name,
+                local_dropdown_tally_type,
+                testscore,
+                positive_prompt,
+                negative_prompt
+                )
             if final:
                 sd_models.list_models()
                 model_A_info = sd_models.get_closet_checkpoint_match(model_A)
@@ -587,16 +597,6 @@ def on_ui_tabs():
                         )
                 return ret_html
             else:
-                testMergeHistory.add_history(
-                    base_alpha,
-                    _weights_a,
-                    _weights_b,
-                    weight_name,
-                    local_dropdown_tally_type,
-                    testscore,
-                    positive_prompt,
-                    negative_prompt
-                    )
                 return testscore
 
         def arrange_keys(keys, testval):

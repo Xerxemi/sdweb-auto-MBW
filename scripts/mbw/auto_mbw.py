@@ -58,7 +58,7 @@ presetWeights = PresetWeights()
 def on_ui_tabs():
     def create_sampler_and_steps_selection(choices, tabname):
         with FormRow(elem_id=f"sampler_selection_{tabname}"):
-            sampler = gr.Dropdown(label='Sampling method', elem_id=f"{tabname}_sampling", choices=[x.name for x in choices], value=choices[0].name)
+            sampler = gr.Dropdown(label='Sampling method', elem_id=f"{tabname}_sampling", choices=[x.name for x in choices], value="DPM++ 2M Karras")
             steps = gr.Slider(minimum=1, maximum=150, step=1, elem_id=f"{tabname}_steps", label="Sampling steps", value=20)
         return steps, sampler
     with gr.Column():
@@ -75,11 +75,11 @@ def on_ui_tabs():
                     steps, sampler = create_sampler_and_steps_selection(samplers, "autombw")
                 with FormRow():
                     with gr.Column(elem_id="autombw_column_size", scale=4):
-                        width = gr.Slider(minimum=64, maximum=2048, step=64, label="Width", value=512, elem_id="autombw_width")
-                        height = gr.Slider(minimum=64, maximum=2048, step=64, label="Height", value=512, elem_id="autombw_height")
+                        width = gr.Slider(minimum=64, maximum=2048, step=64, label="Width", value=768, elem_id="autombw_width")
+                        height = gr.Slider(minimum=64, maximum=2048, step=64, label="Height", value=768, elem_id="autombw_height")
                     with gr.Column(elem_id="autombw_column_batch"):
                         batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id="autombw_batch_count")
-                        batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1, elem_id="autombw_batch_size")
+                        batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=8, elem_id="autombw_batch_size")
                 cfg_scale = gr.Slider(minimum=1.0, maximum=30.0, step=0.5, label='CFG Scale', value=7.0, elem_id="autombw_cfg_scale")
                 with gr.Row():
                     chk_keep_random_seed = gr.Checkbox(label="Keep random seed", value=False)
@@ -116,7 +116,7 @@ def on_ui_tabs():
                     with gr.Column():
                         sl_B_ALL = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="Test Base", value=0, elem_id="autombw_test_base")
                         with gr.Row():
-                            chk_base_alpha = gr.Checkbox(label="base_alpha", value=True, elem_id="autombw_base_alpha")
+                            chk_base_alpha = gr.Checkbox(label="base_alpha", value=False, elem_id="autombw_base_alpha")
                             sl_base_alpha = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label="base_alpha", value=0, elem_id="autombw_base_alpha_sl")
                     chk_verbose_mbw = gr.Checkbox(label="verbose console", value=False, elem_id="autombw_verbose_mbw")
                     chk_allow_overwrite = gr.Checkbox(label="Allow overwrite", value=True, interactive=False, elem_id="autombw_allow_overwrite")
@@ -125,23 +125,23 @@ def on_ui_tabs():
                     with gr.Column():
                         with gr.Row():
                             chk_save_as_half = gr.Checkbox(label="Save as half", value=True, elem_id="autombw_save_as_half")
-                            chk_save_as_safetensors = gr.Checkbox(label="Save as safetensors", value=False, elem_id="autombw_save_as_safetensors")
-                            chk_save_output_images = gr.Checkbox(label="Save output images", value=False, elem_id="autombw_save_output_images")
+                            chk_save_as_safetensors = gr.Checkbox(label="Save as safetensors", value=True, elem_id="autombw_save_as_safetensors")
+                            chk_save_output_images = gr.Checkbox(label="Save output images", value=True, elem_id="autombw_save_output_images")
                     with gr.Column():
-                        radio_position_ids = gr.Radio(label="Skip/Reset CLIP position_ids", choices=["None", "Skip", "Force Reset"], value="None", type="index", elem_id="autombw_position_ids")
+                        radio_position_ids = gr.Radio(label="Skip/Reset CLIP position_ids", choices=["None", "Skip", "Force Reset"], value="Skip", type="index", elem_id="autombw_position_ids")
                     with gr.Column():
                         with gr.Row():
                             dropdown_search_type = gr.Dropdown(label="Search Type", choices=["Linear", "Binary Mid Pass", "Binary", "Linear 2x", "Binary Mid Pass 2x", "Binary 2x"], value="Binary Mid Pass 2x", elem_id="autombw_search_type")
                         with gr.Row():
-                            dropdown_classifiers = gr.Dropdown(label='Classifier', elem_id="autombw_classifiers", choices=[*discovered_plugins.keys()], value=[*discovered_plugins.keys()][0])
+                            dropdown_classifiers = gr.Dropdown(label='Classifier', elem_id="autombw_classifiers", choices=[*discovered_plugins.keys()], value="score_image_reward")
                     with gr.Column():
                         with gr.Row():
                             tally_types = ["Arithmetic Mean", "Geometric Mean", "Harmonic Mean", "A/G Mean", "G/H Mean", "A/H Mean",  "Median", "Min", "Max", "Min*Max", "Fuzz Mode"]
                             dropdown_tally_type = gr.Dropdown(label="Tally Type", choices=tally_types, value="Arithmetic Mean", elem_id="autombw_tally_type")
-                            dropdown_tally_type_2 = gr.Dropdown(label="Tally Type 2", choices=tally_types, value="Arithmetic Mean", elem_id="autombw_tally_type_2")
-                            dropdown_tally_type_3 = gr.Dropdown(label="Tally Type 3", choices=tally_types, value="Arithmetic Mean", elem_id="autombw_tally_type_3")
+                            dropdown_tally_type_2 = gr.Dropdown(label="Tally Type 2", choices=tally_types, value="Geometric Mean", elem_id="autombw_tally_type_2")
+                            dropdown_tally_type_3 = gr.Dropdown(label="Tally Type 3", choices=tally_types, value="Harmonic Mean", elem_id="autombw_tally_type_3")
                         with gr.Row():
-                            dropdown_pass_count = gr.Dropdown(label="Passes", choices=['Singlepass', 'Doublepass', 'Triplepass'], value='Singlepass', elem_id="autombw_pass_count", type="index")
+                            dropdown_pass_count = gr.Dropdown(label="Passes", choices=['Singlepass', 'Doublepass', 'Triplepass'], value='Triplepass', elem_id="autombw_pass_count", type="index")
         with gr.Row():
             model_A = gr.Dropdown(label="Model A", choices=sd_models.checkpoint_tiles(), elem_id="autombw_model_a")
             model_B = gr.Dropdown(label="Model B", choices=sd_models.checkpoint_tiles(), elem_id="autombw_model_b")
@@ -500,6 +500,16 @@ def on_ui_tabs():
 
             # save log to history.tsv
             weight_name = ""
+            testMergeHistory.add_history(
+                base_alpha,
+                _weights,
+                "",
+                weight_name,
+                local_dropdown_tally_type,
+                testscore,
+                positive_prompt,
+                negative_prompt
+                )
             if final:
                 sd_models.list_models()
                 model_A_info = sd_models.get_closet_checkpoint_match(model_A)
@@ -531,16 +541,6 @@ def on_ui_tabs():
                         )
                 return ret_html
             else:
-                testMergeHistory.add_history(
-                    base_alpha,
-                    _weights,
-                    "",
-                    weight_name,
-                    local_dropdown_tally_type,
-                    testscore,
-                    positive_prompt,
-                    negative_prompt
-                    )
                 return testscore
 
         def arrange_keys(keys, testval):
