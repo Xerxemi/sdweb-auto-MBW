@@ -12,7 +12,7 @@ from modules import scripts
 CSV_FILE_ROOT = "csv/"
 CSV_FILE_PATH = "csv/test_history.tsv"
 HEADERS = [
-        "base_alpha", "weight_name", "weight_values", "weight_values2", "datetime", "positive_prompt", "negative_prompt"]
+        "base_alpha", "weight_name", "weight_values", "weight_values2", "local_dropdown_tally_type", "testscore" , "datetime", "positive_prompt", "negative_prompt"]
 path_root = scripts.basedir()
 
 class TestMergeHistory():
@@ -29,6 +29,8 @@ class TestMergeHistory():
                 weight_value_A,
                 weight_value_B,
                 weight_name,
+                local_dropdown_tally_type,
+                testscore,
                 positive_prompt, negative_prompt):
         _history_dict = {}
         _history_dict.update({
@@ -36,6 +38,8 @@ class TestMergeHistory():
             "weight_name": weight_name,
             "weight_values": weight_value_A,
             "weight_values2": weight_value_B,
+            "local_dropdown_tally_type": local_dropdown_tally_type,
+            "testscore": testscore, 
             "datetime": f"{datetime.datetime.now()}",
             "positive_prompt": positive_prompt,
             "negative_prompt": negative_prompt
