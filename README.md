@@ -9,6 +9,8 @@ Preliminary article here: https://medium.com/@media_97267/the-automated-stable-d
 
 Update: A V2 is in the works with completely rewritten internals & ui, and lots of juicy features.
 
+V2-BETA here: https://github.com/Xerxemi/auto-MBW-rt
+
 ----
 
 Made by both Xynon#7407 and Xerxemi#6423.
