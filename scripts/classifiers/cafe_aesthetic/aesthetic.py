@@ -8,7 +8,7 @@ from PIL import Image, ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-from webui import wrap_gradio_gpu_call
+from modules.call_queue import wrap_gradio_gpu_call
 from modules import shared, scripts, script_callbacks, ui
 from modules import generation_parameters_copypaste as parameters_copypaste
 import launch
